@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 import { useRef, useEffect, useState } from "react";
-import { FiVideo, FiVideoOff, FiMic, FiMicOff, FiRotateCw } from "react-icons/fi";
+import { FiVideo, FiVideoOff, FiMic, FiMicOff, FiRotateCw, FiRotateCcw } from "react-icons/fi";
 
 const configuration = {
   iceServers: [
@@ -185,23 +185,20 @@ function App ()
   localVideo = useRef( null );
   remoteVideo = useRef( null );
 
-  const [ cameraFace, setCameraFace ] = useState( "user" );
-
-
   useEffect( () =>
   {
     hangupButton.current.disabled = true;
     muteAudButton.current.disabled = true;
   }, [] );
   const [ audiostate, setAudio ] = useState( false );
+  const [ cameraFacingMode, setCameraFacingMode ] = useState( "user" );
 
-  function changeCamera ()
+  const toggleCamera = () =>
   {
-    setCameraFace( old =>
-    {
-      return old === "user" ? "environment" : "user"
-    } );
-  }
+    setCameraFacingMode( ( prevMode ) =>
+      prevMode === "user" ? "environment" : "user"
+    );
+  };
 
   const startB = async () =>
   {
@@ -209,7 +206,7 @@ function App ()
     {
       localStream = await navigator.mediaDevices.getUserMedia( {
         video: {
-          facingMode: cameraFace,
+          facingMode: cameraFacingMode,
         },
         audio: { echoCancellation: true },
       } );
@@ -282,9 +279,9 @@ function App ()
           </button>
           <button
             className="btn-item btn-start"
-            onClick={changeCamera}
+            onClick={toggleCamera}
           >
-            <FiRotateCw />
+            {cameraFacingMode === "user" ? <FiRotateCw /> : <FiRotateCcw />}
           </button>
           <button
             className="btn-item btn-start"
