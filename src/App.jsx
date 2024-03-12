@@ -1,7 +1,6 @@
 import { io } from "socket.io-client";
 import { useRef, useEffect, useState } from "react";
 import { FiVideo, FiVideoOff, FiMic, FiMicOff } from "react-icons/fi";
-import { ImPhoneHangUp } from "react-icons/im";
 
 const configuration = {
     iceServers: [
@@ -19,6 +18,7 @@ let startButton;
 let muteAudButton;
 let remoteVideo;
 let localVideo;
+let isConnectionPaused = true;
 socket.on( "message", ( e ) =>
 {
     if ( !localStream )
@@ -199,11 +199,11 @@ function App ()
         socket.emit( "message", { type: "ready" } );
     };
 
-    const hangB = async () =>
+    async function hangB ()
     {
-        hangup();
-        socket.emit( "message", { type: "bye" } );
-    };
+        pauseConnection();
+        // socket.emit( "message", { type: "bye" } );
+    }
 
     function muteAudio ()
     {
@@ -222,21 +222,63 @@ function App ()
         }
     }
 
+    // Pause the connection
+    function pauseConnection ()
+    {
+        if ( pc && pc.getSenders )
+        {
+            pc.getSenders().forEach( sender =>
+            {
+                const track = sender.track;
+                if ( track )
+                {
+                    track.enabled = false;
+                }
+            } );
+        }
+        setVideo( false );  // Use setVideo to update the state
+    }
+
+    // Resume the connection
+    function resumeConnection ()
+    {
+        if ( pc && pc.getSenders )
+        {
+            pc.getSenders().forEach( sender =>
+            {
+                const track = sender.track;
+                if ( track )
+                {
+                    track.enabled = true;
+                }
+            } );
+        }
+        setVideo( true );  // Use setVideo to update the state
+    }
 
     async function toggleVideo ()
     {
-        if ( videoState )
+        if ( !videoState )
         {
-            await setVideo( false );
-            await hangB();
-            console.log( 'Video turned off' );
+            if ( localStream )
+            {
+                resumeConnection();
+                console.log( 'Video resumed' );
+            } else
+            {
+                await startB();  // Ensure startB is completed before checking videoState
+                await muteAudio();
+                setVideo( true );  // Use setVideo to update the state
+                console.log( 'Video started' );
+            }
         } else
         {
-            await setVideo( true );
-            await startB();
-            console.log( 'Video turned on' );
+            // If connection is not paused, pause it
+            pauseConnection();
+            console.log( 'Video paused' );
         }
     }
+
 
     return (
         <>
