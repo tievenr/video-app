@@ -207,18 +207,21 @@ function App ()
 
     function muteAudio ()
     {
-        if ( audiostate )
+        if ( localStream )
         {
-            localVideo.current.muted = true;
-            setAudio( false );
-            // console.log( "Audio muted" );
-        } else
-        {
-            localVideo.current.muted = false;
-            setAudio( true );
-            // console.log( "Audio unmuted" );
+            const audioTracks = localStream.getAudioTracks();
+            if ( audioTracks.length > 0 )
+            {
+                const audioTrack = audioTracks[ 0 ];
+                audioTrack.enabled = !audioTrack.enabled;
+
+                setAudio( audioTrack.enabled );
+
+                console.log( audioTrack.enabled ? "Audio unmuted" : "Audio muted" );
+            }
         }
     }
+
 
     async function toggleVideo ()
     {
