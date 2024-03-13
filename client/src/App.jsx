@@ -1,9 +1,7 @@
-import { config } from "dotenv";
 import { io } from "socket.io-client";
 import { useRef, useEffect, useState } from "react";
 import { FiVideo, FiVideoOff, FiMic, FiMicOff } from "react-icons/fi";
 
-config();
 const configuration = {
     iceServers: [
         {
@@ -12,7 +10,7 @@ const configuration = {
     ],
     iceCandidatePoolSize: 10,
 };
-const socket = io( `http://${ process.env.IP }:3000`, { transports: [ "websocket" ] } );
+const socket = io( `http://192.168.173.56:3000`, { transports: [ "websocket" ] } );
 
 let pc;
 let localStream;
